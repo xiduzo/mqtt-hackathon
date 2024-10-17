@@ -2,7 +2,19 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies:
+
+```bash
+npm install
+```
+
+Then, configure the environment variables:
+
+```bash
+cp .env.local.example .env.local
+```
+
+Finally, run the development server:
 
 ```bash
 npm run dev
