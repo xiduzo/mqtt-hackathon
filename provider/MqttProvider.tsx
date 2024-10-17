@@ -9,7 +9,10 @@ import {
 } from "react";
 import { toast } from "react-toastify";
 
-type OnMessageCallback = (message: string, topic: string) => void;
+// Could also be `mqtt.OnMessageCallback`
+// if you want to pass the raw payload and packet
+// to the callback
+type OnMessageCallback = (topic: string, message: string) => void;
 
 type MqttProviderProps = {
   subscribe: (topic: string, callback: OnMessageCallback) => void;
@@ -20,12 +23,12 @@ const MqttContext = createContext({} as MqttProviderProps);
 
 export function MqttProvider(props: PropsWithChildren) {
   const client = useRef<MqttClient | null>(null);
-  const subscriptions = useRef<Record<string, OnMessageCallback>>({});
+  const subscriptions = useRef<Map<string, OnMessageCallback>>(new Map());
 
   const subscribe = useCallback(
     (topic: string, callback: OnMessageCallback) => {
       client.current?.subscribe(topic);
-      subscriptions.current[topic] = callback;
+      subscriptions.current.set(topic, callback);
 
       return () => {
         client.current?.unsubscribe(topic);
@@ -34,10 +37,17 @@ export function MqttProvider(props: PropsWithChildren) {
     [],
   );
 
-  const publish = useCallback((topic: string, message: boolean | number | string | Record<string, unknown>) => {
-    const messageToSend = typeof message === "string" ? message : JSON.stringify(message);
-    client.current?.publish(topic, messageToSend);
-  }, []);
+  const publish = useCallback(
+    (
+      topic: string,
+      message: boolean | number | string | Record<string, unknown>,
+    ) => {
+      const messageToSend =
+        typeof message === "string" ? message : JSON.stringify(message);
+      client.current?.publish(topic, messageToSend);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (client.current) return;
@@ -68,11 +78,32 @@ export function MqttProvider(props: PropsWithChildren) {
       .on("error", (error) => {
         toast.error(error.message);
       })
-      .on("message", (topic, message) => {
-        // TODO: implement wildcard subscriptions (e.g. "devices/+/status" or "devices/#")
-        const callback = subscriptions.current[topic];
+      .on("message", (topic, payload, packet) => {
+        Array.from(subscriptions.current.keys()).forEach((subscription) => {
+          const regexp = new RegExp(
+            subscription.replace(/\+/g, "\\S+").replace(/#/, "\\S+"),
+          );
 
-        callback?.(message.toString(), topic);
+          if (!topic.match(regexp)) {
+            return;
+          }
+
+          const callback = subscriptions.current.get(subscription);
+
+          if (!callback) {
+            return;
+          }
+
+          try {
+            callback(topic, payload.toString());
+          } catch {
+            console.error("Error in callback for topic", {
+              topic,
+              subscription,
+              packet
+            });
+          }
+        });
       });
   }, [subscribe]);
 

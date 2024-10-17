@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useMqtt, useSubscribe } from "@/provider/MqttProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { SendIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { z } from "zod";
@@ -38,7 +39,7 @@ export function ExampleMqtt() {
 
   const { publish } = useMqtt();
 
-  useSubscribe("foo/bar", (message, topic) => {
+  useSubscribe("#", (topic, message) => {
     toast.success(`received on '${topic}': ${message}`);
   });
 
@@ -56,7 +57,7 @@ export function ExampleMqtt() {
             <FormItem>
               <FormLabel>Topic</FormLabel>
               <FormControl>
-                <Input placeholder="foo/bar" {...field} />
+                <Input placeholder="foo/bar, testtopic/#, device/+/status" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -78,7 +79,7 @@ export function ExampleMqtt() {
             </FormItem>
           )}
         />
-        <Button type="submit">Publish</Button>
+        <Button type="submit">Publish <SendIcon/></Button>
       </form>
     </Form>
   );
