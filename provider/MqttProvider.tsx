@@ -65,13 +65,13 @@ export function MqttProvider(props: PropsWithChildren) {
     client.current
       .on("connect", () => {
         toast.success("Connected to MQTT broker!");
-        Object.entries(subscriptions.current).forEach(([topic, callback]) =>
+        Array.from(subscriptions.current.entries()).forEach(([topic, callback]) =>
           subscribe(topic, callback),
         );
       })
       .on("reconnect", () => {
         toast.warning("Reconnecting to MQTT broker...");
-        Object.entries(subscriptions.current).forEach(([topic, callback]) =>
+        Array.from(subscriptions.current.entries()).forEach(([topic, callback]) =>
           subscribe(topic, callback),
         );
       })
