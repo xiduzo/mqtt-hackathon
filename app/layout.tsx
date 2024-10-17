@@ -1,8 +1,7 @@
+import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/provider/Providers";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -32,7 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased p-4`}
       >
         <Providers>{children}</Providers>
-        <ToastContainer hideProgressBar stacked newestOnTop limit={3}  />
+        <Toaster pauseWhenPageIsHidden visibleToasts={3} />
       </body>
     </html>
   );

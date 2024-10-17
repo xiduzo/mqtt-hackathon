@@ -7,7 +7,7 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 // Could also be `mqtt.OnMessageCallback`
 // if you want to pass the raw payload and packet
